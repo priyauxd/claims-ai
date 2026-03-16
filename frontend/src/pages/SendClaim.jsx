@@ -37,6 +37,68 @@ const PRIORITY_COLORS = {
   low:    "bg-green-100 text-green-700",
 };
 
+// Hardcoded result for the sample invoice — used when backend is unavailable
+// (e.g. GitHub Pages). Validation checks vary per pet at runtime (see below).
+const SAMPLE_EXTRACTED = {
+  microchip_number: "900123456789012",
+  invoice_date: "2025-12-15",
+  clinic_name: "Dubai Veterinary Clinic",
+  clinic_address: "Al Barsha, Dubai, UAE",
+  clinic_phone: "+971 4 123 4567",
+  total_amount: 1338.75,
+  currency: "AED",
+  line_items: [],
+  raw_text_hint: "Veterinary invoice for Oslo (Cocker Spaniel) from Dubai Veterinary Clinic, December 2025",
+};
+
+const MICROCHIPS = { oslo: "900123456789012", blah: "900987654321098", luna: "900111222333444" };
+const POLICIES   = {
+  oslo: { start: "2025-04-07", end: "2026-03-07" },
+  blah: { start: "2025-04-07", end: "2026-03-07" },
+  luna: { start: "2024-03-01", end: "2025-03-01" },
+};
+
+function buildSampleResult(petId) {
+  const id = (petId || "oslo").toLowerCase();
+  const chip = SAMPLE_EXTRACTED.microchip_number;
+  const expectedChip = MICROCHIPS[id];
+  const policy = POLICIES[id] || POLICIES.oslo;
+  const invoiceDate = SAMPLE_EXTRACTED.invoice_date;
+
+  const microchip_check = chip === expectedChip
+    ? { status: "pass",    message: `Microchip matches ${id.charAt(0).toUpperCase() + id.slice(1)}'s registered record`, value: chip }
+    : { status: "warning", message: "Microchip number doesn't match our records — vet team will verify", value: chip };
+
+  const inRange = invoiceDate >= policy.start && invoiceDate <= policy.end;
+  const date_check = inRange
+    ? { status: "pass", message: `Invoice date is within policy period (${policy.start} – ${policy.end})`, value: invoiceDate }
+    : { status: "fail", message: `Invoice date ${invoiceDate} is outside policy period (${policy.start} – ${policy.end})`, value: invoiceDate };
+
+  const clinic_check = { status: "pass", message: "Clinic verified in our network (Dubai)", value: "Dubai Veterinary Clinic" };
+
+  const coverage_items = [
+    { description: "Consultation / Examination",          amount: 250, category: "consultation", covered: true,  exclusion_reason: null },
+    { description: "X-Ray (Thoracic)",                    amount: 400, category: "procedure",    covered: true,  exclusion_reason: null },
+    { description: "Antibiotic Injection",                amount: 240, category: "medication",   covered: true,  exclusion_reason: null },
+    { description: "Prescribed Medication (Amoxicillin)", amount: 180, category: "medication",   covered: true,  exclusion_reason: null },
+    { description: "Vitamin B Complex Supplement",        amount: 85,  category: "vitamin",      covered: false, exclusion_reason: "Vitamins and supplements are not covered" },
+    { description: "Premium Diet Pet Food (Hills Science Diet)", amount: 120, category: "food",  covered: false, exclusion_reason: "Pet food is not covered under your policy" },
+  ];
+
+  const reimbursement = {
+    total_billed: 1275, excluded_amount: 205, eligible_amount: 1070,
+    deductible: 500, after_deductible: 570, reimbursement_rate: 0.8,
+    estimated_reimbursement: 456, currency: "AED",
+    note: "Estimate subject to vet validation and full policy review",
+  };
+
+  return {
+    extracted: SAMPLE_EXTRACTED,
+    microchip_check, date_check, clinic_check, coverage_items, reimbursement,
+    pre_filled: { visitDate: "2025-12-15", amount: "1275" },
+  };
+}
+
 // ── Shared sub-components ─────────────────────────────────────────────────────
 
 function StepsBadge({ stepNum, currentStep }) {
@@ -338,7 +400,7 @@ function Step6Documents({ files, onChange, onBack, onNext, loading, useSample, o
           className="flex items-center gap-4 p-4 rounded-2xl border-2 border-dashed border-primary-200 bg-primary-25 hover:bg-primary-50 hover:border-primary-400 transition text-left w-full"
         >
           <div className="shrink-0 w-16 h-20 rounded-lg overflow-hidden border border-primary-100 shadow-sm bg-white">
-            <img src="/sample-invoice.svg" alt="Sample invoice" className="w-full h-full object-cover object-top" />
+            <img src="./sample-invoice.svg" alt="Sample invoice" className="w-full h-full object-cover object-top" />
           </div>
           <div className="flex-1">
             <p className="text-sm font-semibold text-primary-600">Try with sample invoice</p>
@@ -353,8 +415,8 @@ function Step6Documents({ files, onChange, onBack, onNext, loading, useSample, o
       {useSample && (
         <div className="flex gap-4 p-4 rounded-2xl border-2 border-primary-300 bg-primary-25">
           {/* Invoice preview */}
-          <a href="/sample-invoice.svg" target="_blank" rel="noreferrer" className="shrink-0 w-20 h-28 rounded-lg overflow-hidden border border-primary-200 shadow block hover:shadow-md transition">
-            <img src="/sample-invoice.svg" alt="Sample invoice" className="w-full h-full object-cover object-top" />
+          <a href="./sample-invoice.svg" target="_blank" rel="noreferrer" className="shrink-0 w-20 h-28 rounded-lg overflow-hidden border border-primary-200 shadow block hover:shadow-md transition">
+            <img src="./sample-invoice.svg" alt="Sample invoice" className="w-full h-full object-cover object-top" />
           </a>
           <div className="flex-1 flex flex-col justify-between">
             <div>
@@ -368,7 +430,7 @@ function Step6Documents({ files, onChange, onBack, onNext, loading, useSample, o
             </div>
             <div className="flex gap-2 mt-2">
               <a
-                href="/sample-invoice.svg"
+                href="./sample-invoice.svg"
                 target="_blank"
                 rel="noreferrer"
                 className="text-xs text-primary-500 underline hover:text-primary-700"
@@ -516,7 +578,7 @@ function InvoiceScanner() {
     <div className="flex flex-col items-center justify-center flex-1 gap-5 py-4">
       {/* Animated invoice card */}
       <div className="relative w-40 h-52 rounded-xl overflow-hidden shadow-md border border-primary-200 bg-white">
-        <img src="/sample-invoice.svg" alt="invoice" className="w-full h-full object-cover object-top opacity-70" />
+        <img src="./sample-invoice.svg" alt="invoice" className="w-full h-full object-cover object-top opacity-70" />
         {/* Moving scan line */}
         <div
           className="absolute left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-primary-500 to-transparent animate-scan-line shadow-[0_0_8px_2px_rgba(66,169,184,0.6)]"
@@ -922,10 +984,9 @@ export default function SendClaim() {
     try {
       let data;
       if (useSampleInvoice) {
-        const petId = formData.pet || "oslo";
-        const res = await fetch(`/api/demo-extract?pet_id=${petId}`);
-        if (!res.ok) throw new Error("Demo extraction failed");
-        data = await res.json();
+        // Use inline data — no backend needed (works on GitHub Pages)
+        await new Promise((r) => setTimeout(r, 1800)); // let scanner play
+        data = buildSampleResult(formData.pet);
       } else {
         const fd = new FormData();
         fd.append("file", formData.files[0]);
