@@ -4,9 +4,11 @@ from typing import Optional
 import anthropic
 
 from .config import settings
-from .models import ClassificationResult, ClaimPriority, ClaimType
+from .models import ClaimPriority, ClaimType, ClassificationResult
 
-CLASSIFICATION_PROMPT = """You are an expert claims classifier. Analyze the provided claim text and return a JSON object with the following fields:
+CLASSIFICATION_PROMPT = """\
+You are an expert claims classifier. Analyze the provided claim text and \
+return a JSON object with the following fields:
 
 - claim_type: one of {claim_types}
 - priority: one of {priorities}

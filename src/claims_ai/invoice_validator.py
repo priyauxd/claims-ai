@@ -146,7 +146,10 @@ def _check_date(invoice_date_str: Optional[str], pet_id: str) -> CheckResult:
         else:
             return CheckResult(
                 status=ValidationStatus.FAIL,
-                message=f"Invoice date {invoice_date_str} is outside policy period ({start} – {end})",
+                message=(
+                    f"Invoice date {invoice_date_str} is outside policy period "
+                    f"({start} \u2013 {end})"
+                ),
                 value=invoice_date_str,
             )
 
