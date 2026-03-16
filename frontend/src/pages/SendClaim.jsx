@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // ── Data ─────────────────────────────────────────────────────────────────────
@@ -436,28 +436,53 @@ function Step6Documents({ files, onChange, onBack, onNext, loading, useSample, o
   );
 }
 
-// ── Step 7: Invoice Review ────────────────────────────────────────────────────
+// ── Step 7: Invoice Review (animated) ────────────────────────────────────────
 
 const STATUS_CONFIG = {
-  pass:      { icon: "✓", ring: "border-green-200",  bg: "bg-green-50",   text: "text-green-700",  dot: "bg-green-500"  },
-  fail:      { icon: "✗", ring: "border-red-200",    bg: "bg-red-50",     text: "text-red-700",    dot: "bg-red-500"    },
-  warning:   { icon: "⚠", ring: "border-yellow-200", bg: "bg-yellow-50",  text: "text-yellow-700", dot: "bg-yellow-500" },
-  not_found: { icon: "?", ring: "border-gray-200",   bg: "bg-gray-50",    text: "text-gray-600",   dot: "bg-gray-400"   },
+  pass:      { icon: "✓", ring: "border-green-200",  bg: "bg-green-50",   text: "text-green-700",  dot: "bg-green-500",  label: "Verified"  },
+  fail:      { icon: "✗", ring: "border-red-200",    bg: "bg-red-50",     text: "text-red-700",    dot: "bg-red-500",    label: "Failed"    },
+  warning:   { icon: "⚠", ring: "border-yellow-200", bg: "bg-yellow-50",  text: "text-yellow-700", dot: "bg-yellow-400", label: "Warning"   },
+  not_found: { icon: "?", ring: "border-gray-200",   bg: "bg-gray-50",    text: "text-gray-500",   dot: "bg-gray-400",   label: "Not found" },
 };
 
-function CheckRow({ label, icon, check }) {
+function SkeletonCheckRow({ label, icon }) {
+  return (
+    <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-100 bg-gray-50">
+      <span className="text-lg">{icon}</span>
+      <span className="text-sm text-gray-400">{label}</span>
+      <div className="ml-auto flex gap-1">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="w-1.5 h-1.5 rounded-full bg-primary-300"
+            style={{ animation: `bounce 0.8s ${i * 0.18}s infinite` }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AnimatedCheckRow({ check, label, icon }) {
   const cfg = STATUS_CONFIG[check.status] || STATUS_CONFIG.not_found;
   return (
-    <div className={`flex items-start gap-3 p-3 rounded-xl border ${cfg.ring} ${cfg.bg}`}>
-      <span className="text-xl shrink-0">{icon}</span>
+    <div
+      className={`flex items-start gap-3 p-3 rounded-xl border ${cfg.ring} ${cfg.bg} animate-fade-up`}
+      style={{ animationFillMode: "both" }}
+    >
+      <span className="text-xl shrink-0 mt-0.5">{icon}</span>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">{label}</span>
-          <span className={`w-4 h-4 rounded-full flex items-center justify-center text-white text-xs font-bold ${cfg.dot}`}>
+          <span
+            className={`w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold ${cfg.dot} animate-pop-in`}
+            style={{ animationFillMode: "both" }}
+          >
             {cfg.icon}
           </span>
+          <span className={`text-xs font-semibold ${cfg.text}`}>{cfg.label}</span>
         </div>
-        <p className={`text-sm mt-0.5 ${cfg.text}`}>{check.message}</p>
+        <p className={`text-sm mt-0.5 leading-snug ${cfg.text}`}>{check.message}</p>
         {check.value && check.status !== "pass" && (
           <p className="text-xs text-text-secondary mt-0.5 font-mono">{check.value}</p>
         )}
@@ -466,14 +491,117 @@ function CheckRow({ label, icon, check }) {
   );
 }
 
-function Step7InvoiceReview({ extraction, onBack, onNext }) {
+function CountUpNumber({ target, duration = 1100 }) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    const steps = 50;
+    const inc = target / steps;
+    const interval = duration / steps;
+    let i = 0;
+    let cur = 0;
+    const timer = setInterval(() => {
+      i++;
+      cur = Math.min(cur + inc, target);
+      setCount(Math.round(cur));
+      if (i >= steps) clearInterval(timer);
+    }, interval);
+    return () => clearInterval(timer);
+  }, [target, duration]);
+  return <>{count.toLocaleString()}</>;
+}
+
+// Loading: invoice scanner animation shown while API call is in flight
+function InvoiceScanner() {
+  return (
+    <div className="flex flex-col items-center justify-center flex-1 gap-5 py-4">
+      {/* Animated invoice card */}
+      <div className="relative w-40 h-52 rounded-xl overflow-hidden shadow-md border border-primary-200 bg-white">
+        <img src="/sample-invoice.svg" alt="invoice" className="w-full h-full object-cover object-top opacity-70" />
+        {/* Moving scan line */}
+        <div
+          className="absolute left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-primary-500 to-transparent animate-scan-line shadow-[0_0_8px_2px_rgba(66,169,184,0.6)]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-primary-25/40 to-transparent pointer-events-none" />
+      </div>
+
+      <div className="flex flex-col items-center gap-2">
+        <p className="text-primary-600 font-semibold text-base">Analyzing your invoice</p>
+        <div className="flex gap-1.5">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="w-2.5 h-2.5 rounded-full bg-primary-400"
+              style={{ animation: `bounce 0.9s ${i * 0.22}s infinite` }}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Skeleton check rows */}
+      <div className="w-full max-w-xs flex flex-col gap-2">
+        {[
+          { icon: "🔬", label: "Verifying microchip…" },
+          { icon: "📅", label: "Checking policy dates…" },
+          { icon: "🏥", label: "Looking up clinic…" },
+        ].map((row, i) => (
+          <div
+            key={i}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-50 border border-gray-100"
+            style={{ animation: `pulse 1.6s ${i * 0.25}s ease-in-out infinite` }}
+          >
+            <span className="text-sm">{row.icon}</span>
+            <span className="text-sm text-gray-400">{row.label}</span>
+            <div className="ml-auto flex gap-1">
+              {[0, 1, 2].map((j) => (
+                <div
+                  key={j}
+                  className="w-1.5 h-1.5 rounded-full bg-primary-300"
+                  style={{ animation: `bounce 0.7s ${j * 0.14}s infinite` }}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Step7InvoiceReview({ extraction, loading, extractError, onBack, onNext }) {
+  const [checksVisible, setChecksVisible] = useState(0);
+  const [showCoverage, setShowCoverage]   = useState(false);
+  const [showReim,     setShowReim]       = useState(false);
+
+  useEffect(() => {
+    if (!extraction) return;
+    setChecksVisible(0);
+    setShowCoverage(false);
+    setShowReim(false);
+    const t1 = setTimeout(() => setChecksVisible(1), 200);
+    const t2 = setTimeout(() => setChecksVisible(2), 620);
+    const t3 = setTimeout(() => setChecksVisible(3), 1040);
+    const t4 = setTimeout(() => setShowCoverage(true), 1480);
+    const t5 = setTimeout(() => setShowReim(true),     1960);
+    return () => [t1, t2, t3, t4, t5].forEach(clearTimeout);
+  }, [extraction]);
+
+  if (loading) return <InvoiceScanner />;
+
+  if (extractError) {
+    return (
+      <div className="flex flex-col flex-1 gap-4 items-center justify-center">
+        <span className="text-5xl">⚠️</span>
+        <p className="text-red-600 text-sm text-center max-w-xs">{extractError}</p>
+        <NavButtons step={7} onBack={onBack} onNext={onNext} nextLabel="Continue without analysis →" />
+      </div>
+    );
+  }
+
   if (!extraction) {
     return (
       <div className="flex flex-col flex-1 gap-4 items-center justify-center">
         <span className="text-5xl">📄</span>
-        <p className="text-text-secondary text-sm text-center">
-          No invoice was uploaded — invoice validation was skipped.
-        </p>
+        <p className="text-text-secondary text-sm text-center">No invoice uploaded — validation skipped.</p>
         <NavButtons step={7} onBack={onBack} onNext={onNext} nextLabel="Continue →" />
       </div>
     );
@@ -485,52 +613,69 @@ function Step7InvoiceReview({ extraction, onBack, onNext }) {
 
   return (
     <div className="flex flex-col flex-1 gap-4 overflow-y-auto">
-      <MascotBubble message="Let's review what we found on your invoice! 🔍" />
+      <MascotBubble message="Here's what we found on your invoice! 🔍" />
 
-      {/* AI hint */}
+      {/* AI summary pill */}
       {extracted.raw_text_hint && (
-        <div className="bg-primary-25 border border-primary-50 rounded-xl px-4 py-2 text-sm text-primary-600">
+        <div
+          className="animate-fade-up bg-primary-25 border border-primary-50 rounded-xl px-4 py-2 text-sm text-primary-600"
+          style={{ animationFillMode: "both" }}
+        >
           📋 {extracted.raw_text_hint}
         </div>
       )}
 
-      {/* Validation checks */}
+      {/* Staggered validation checks */}
       <div className="flex flex-col gap-2">
         <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Validation Checks</p>
-        <CheckRow label="Microchip" icon="🔬" check={microchip_check} />
-        <CheckRow label="Invoice Date" icon="📅" check={date_check} />
-        <CheckRow label="Clinic" icon="🏥" check={clinic_check} />
+
+        {checksVisible >= 1
+          ? <AnimatedCheckRow label="Microchip"    icon="🔬" check={microchip_check} />
+          : <SkeletonCheckRow label="Verifying microchip…"    icon="🔬" />}
+
+        {checksVisible >= 2
+          ? <AnimatedCheckRow label="Invoice Date" icon="📅" check={date_check} />
+          : <SkeletonCheckRow label="Checking policy dates…"  icon="📅" />}
+
+        {checksVisible >= 3
+          ? <AnimatedCheckRow label="Clinic"       icon="🏥" check={clinic_check} />
+          : <SkeletonCheckRow label="Looking up clinic…"      icon="🏥" />}
       </div>
 
-      {/* Coverage table */}
-      {coverage_items.length > 0 && (
-        <div>
+      {/* Coverage table — slides in after checks */}
+      {coverage_items.length > 0 && showCoverage && (
+        <div className="animate-fade-up" style={{ animationFillMode: "both" }}>
           <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-2">Coverage Breakdown</p>
           <div className="grid grid-cols-2 gap-2">
-            {/* Covered */}
             <div className="bg-green-50 rounded-xl p-3 border border-green-100">
-              <p className="text-xs font-semibold text-green-700 mb-2 flex items-center gap-1">
-                <span className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center text-white text-xs">✓</span>
+              <p className="text-xs font-semibold text-green-700 mb-2 flex items-center gap-1.5">
+                <span className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center text-white text-[10px] animate-pop-in" style={{ animationFillMode: "both" }}>✓</span>
                 Covered ({covered.length})
               </p>
-              {covered.length === 0 && <p className="text-xs text-green-600 italic">None</p>}
               {covered.map((item, i) => (
-                <div key={i} className="flex justify-between text-xs text-green-700 py-0.5 border-b border-green-100 last:border-0">
+                <div
+                  key={i}
+                  className="flex justify-between text-xs text-green-700 py-0.5 border-b border-green-100 last:border-0 animate-fade-up"
+                  style={{ animationDelay: `${i * 70}ms`, animationFillMode: "both" }}
+                >
                   <span className="truncate mr-2">{item.description}</span>
                   <span className="font-medium shrink-0">AED {item.amount.toLocaleString()}</span>
                 </div>
               ))}
             </div>
 
-            {/* Excluded */}
             <div className="bg-red-50 rounded-xl p-3 border border-red-100">
-              <p className="text-xs font-semibold text-red-600 mb-2 flex items-center gap-1">
-                <span className="w-4 h-4 bg-red-400 rounded-full flex items-center justify-center text-white text-xs">✗</span>
+              <p className="text-xs font-semibold text-red-600 mb-2 flex items-center gap-1.5">
+                <span className="w-4 h-4 bg-red-400 rounded-full flex items-center justify-center text-white text-[10px] animate-pop-in" style={{ animationFillMode: "both" }}>✗</span>
                 Excluded ({excluded.length})
               </p>
               {excluded.length === 0 && <p className="text-xs text-red-400 italic">None</p>}
               {excluded.map((item, i) => (
-                <div key={i} className="py-0.5 border-b border-red-100 last:border-0">
+                <div
+                  key={i}
+                  className="py-0.5 border-b border-red-100 last:border-0 animate-fade-up"
+                  style={{ animationDelay: `${i * 90}ms`, animationFillMode: "both" }}
+                >
                   <div className="flex justify-between text-xs text-red-600">
                     <span className="truncate mr-2">{item.description}</span>
                     <span className="font-medium shrink-0">AED {item.amount.toLocaleString()}</span>
@@ -545,45 +690,50 @@ function Step7InvoiceReview({ extraction, onBack, onNext }) {
         </div>
       )}
 
-      {/* Reimbursement estimate */}
-      <div className="bg-paper-tertiary rounded-xl p-4 border border-primary-50">
-        <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3">
-          Estimated Reimbursement
-        </p>
-        <div className="flex flex-col gap-1.5 text-sm">
-          <div className="flex justify-between text-text-primary">
-            <span>Total billed</span>
-            <span className="font-medium">AED {reimbursement.total_billed.toLocaleString()}</span>
-          </div>
-          {reimbursement.excluded_amount > 0 && (
-            <div className="flex justify-between text-red-500">
-              <span>Excluded items</span>
-              <span>− AED {reimbursement.excluded_amount.toLocaleString()}</span>
+      {/* Reimbursement — appears last with count-up number */}
+      {showReim && (
+        <div
+          className="animate-fade-up bg-paper-tertiary rounded-xl p-4 border border-primary-100"
+          style={{ animationFillMode: "both" }}
+        >
+          <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3">Estimated Reimbursement</p>
+          <div className="flex flex-col gap-1.5 text-sm">
+            <div className="flex justify-between text-text-primary">
+              <span>Total billed</span>
+              <span className="font-medium">AED {reimbursement.total_billed.toLocaleString()}</span>
             </div>
-          )}
-          <div className="flex justify-between text-text-primary border-t border-gray-200 pt-1.5 mt-0.5">
-            <span>Eligible amount</span>
-            <span className="font-medium">AED {reimbursement.eligible_amount.toLocaleString()}</span>
+            {reimbursement.excluded_amount > 0 && (
+              <div className="flex justify-between text-red-500">
+                <span>Excluded items</span>
+                <span>− AED {reimbursement.excluded_amount.toLocaleString()}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-text-primary border-t border-gray-200 pt-1.5 mt-0.5">
+              <span>Eligible amount</span>
+              <span className="font-medium">AED {reimbursement.eligible_amount.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between text-text-secondary text-xs">
+              <span>Deductible</span>
+              <span>− AED {reimbursement.deductible.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between text-text-primary border-t border-gray-200 pt-1.5 mt-0.5">
+              <span>After deductible</span>
+              <span className="font-medium">AED {reimbursement.after_deductible.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between font-bold text-primary-600 border-t-2 border-primary-200 pt-2 mt-1 text-[15px]">
+              <span>Your reimbursement ({Math.round(reimbursement.reimbursement_rate * 100)}%)</span>
+              <span className="animate-count-up" style={{ animationFillMode: "both" }}>
+                ≈ AED <CountUpNumber target={reimbursement.estimated_reimbursement} />
+              </span>
+            </div>
           </div>
-          <div className="flex justify-between text-text-secondary text-xs">
-            <span>Deductible</span>
-            <span>− AED {reimbursement.deductible.toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between text-text-primary border-t border-gray-200 pt-1.5 mt-0.5">
-            <span>After deductible</span>
-            <span className="font-medium">AED {reimbursement.after_deductible.toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between font-semibold text-primary-600 border-t-2 border-primary-200 pt-2 mt-0.5">
-            <span>Reimbursement ({Math.round(reimbursement.reimbursement_rate * 100)}%)</span>
-            <span>≈ AED {reimbursement.estimated_reimbursement.toLocaleString()}</span>
-          </div>
+          <p className="text-xs text-text-secondary mt-2 italic">⚠ {reimbursement.note}</p>
         </div>
-        <p className="text-xs text-text-secondary mt-2 italic">
-          ⚠ {reimbursement.note}
-        </p>
-      </div>
+      )}
 
-      <NavButtons step={7} onBack={onBack} onNext={onNext} nextLabel="Looks Good, Continue →" />
+      {showReim && (
+        <NavButtons step={7} onBack={onBack} onNext={onNext} nextLabel="Looks Good, Continue →" />
+      )}
     </div>
   );
 }
@@ -721,7 +871,7 @@ function Step9Review({ data, onBack, onSubmit, loading, result, error }) {
 
 export default function SendClaim() {
   const navigate = useNavigate();
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(6);
 
   // Claim form data
   const [formData, setFormData] = useState({
@@ -755,29 +905,28 @@ export default function SendClaim() {
   function next() { setStep((s) => Math.min(s + 1, STEPS.length)); }
   function back() { setStep((s) => Math.max(s - 1, 1)); }
 
-  // Step 6 → 7: run extraction (real upload or sample demo)
+  // Step 6 → 7: navigate immediately so the scanner animation shows, then load
   async function nextFromDocuments() {
     setExtractError("");
+    setExtraction(null);
 
     const hasSomething = useSampleInvoice || formData.files.length > 0;
     if (!hasSomething) {
-      setExtraction(null);
       next();
       return;
     }
 
+    // Go to step 7 right away — InvoiceScanner renders while we wait
+    next();
     setExtractLoading(true);
     try {
       let data;
-
       if (useSampleInvoice) {
-        // Hit the demo endpoint — runs real validator against hardcoded invoice
         const petId = formData.pet || "oslo";
         const res = await fetch(`/api/demo-extract?pet_id=${petId}`);
         if (!res.ok) throw new Error("Demo extraction failed");
         data = await res.json();
       } else {
-        // Real file upload → Claude vision extraction
         const fd = new FormData();
         fd.append("file", formData.files[0]);
         fd.append("pet_id", formData.pet || "oslo");
@@ -788,10 +937,7 @@ export default function SendClaim() {
         }
         data = await res.json();
       }
-
       setExtraction(data);
-
-      // Auto-fill date and amount from invoice if the user hasn't typed them yet
       if (data.pre_filled?.visitDate && !formData.visitDate) {
         setFormData((prev) => ({ ...prev, visitDate: data.pre_filled.visitDate }));
         setPrefilledDate(true);
@@ -800,8 +946,6 @@ export default function SendClaim() {
         setFormData((prev) => ({ ...prev, amount: data.pre_filled.amount }));
         setPrefilledAmount(true);
       }
-
-      next();
     } catch (err) {
       setExtractError(err.message);
     } finally {
@@ -848,7 +992,7 @@ export default function SendClaim() {
           onToggleSample={setUseSampleInvoice}
         />
       );
-      case 7: return <Step7InvoiceReview extraction={extraction} onBack={back} onNext={next} />;
+      case 7: return <Step7InvoiceReview extraction={extraction} loading={extractLoading} extractError={extractError} onBack={back} onNext={next} />;
       case 8: return <Step8Comments value={formData.comments} onChange={update("comments")} onBack={back} onNext={next} />;
       case 9: return (
         <Step9Review
@@ -878,13 +1022,6 @@ export default function SendClaim() {
             ✕
           </button>
         </div>
-
-        {/* Extraction error banner (shown while still on step 6) */}
-        {extractError && step === 6 && (
-          <div className="mx-6 mt-4 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-600 flex gap-2">
-            <span>⚠️</span> {extractError} — check the file and try again, or skip documents.
-          </div>
-        )}
 
         {/* Body */}
         <div className="flex gap-5 p-5 min-h-[700px]">
