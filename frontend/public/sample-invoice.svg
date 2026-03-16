@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 595 842" width="595" height="842">
+  <defs>
+    <style>
+      text { font-family: Arial, Helvetica, sans-serif; }
+    </style>
+  </defs>
+
+  <!-- Page background -->
+  <rect width="595" height="842" fill="white"/>
+
+  <!-- Header band -->
+  <rect width="595" height="96" fill="#0891b2"/>
+  <!-- Clinic name -->
+  <text x="40" y="38" fill="white" font-size="20" font-weight="bold">Dubai Veterinary Clinic</text>
+  <text x="40" y="57" fill="rgba(255,255,255,0.75)" font-size="11">License: DVC-001  |  Al Barsha, Dubai, UAE</text>
+  <text x="40" y="74" fill="rgba(255,255,255,0.75)" font-size="11">Tel: +971 4 123 4567  |  info@dubaivet.ae</text>
+  <!-- Paw watermark -->
+  <text x="500" y="82" fill="rgba(255,255,255,0.15)" font-size="80">🐾</text>
+
+  <!-- Invoice title -->
+  <text x="40" y="128" fill="#111827" font-size="17" font-weight="bold" letter-spacing="1">VETERINARY INVOICE</text>
+
+  <!-- Invoice meta box -->
+  <rect x="370" y="108" width="185" height="68" rx="7" fill="#f0fdff" stroke="#0891b2" stroke-width="1"/>
+  <text x="383" y="126" fill="#6b7280" font-size="9" font-weight="bold" letter-spacing="0.5">INVOICE NUMBER</text>
+  <text x="383" y="141" fill="#111827" font-size="12" font-weight="bold">INV-2025-08842</text>
+  <text x="383" y="158" fill="#6b7280" font-size="9" font-weight="bold" letter-spacing="0.5">DATE</text>
+  <text x="383" y="172" fill="#111827" font-size="11" font-weight="bold">15 December 2025</text>
+
+  <!-- Pet details box -->
+  <rect x="40" y="145" width="305" height="96" rx="7" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="52" y="164" fill="#6b7280" font-size="8.5" font-weight="bold" letter-spacing="1">PET DETAILS</text>
+  <line x1="52" y1="169" x2="332" y2="169" stroke="#e5e7eb" stroke-width="0.5"/>
+  <text x="52" y="183" fill="#6b7280" font-size="9.5">Name</text>
+  <text x="130" y="183" fill="#111827" font-size="9.5" font-weight="bold">Oslo</text>
+  <text x="52" y="199" fill="#6b7280" font-size="9.5">Breed</text>
+  <text x="130" y="199" fill="#111827" font-size="9.5">Cocker Spaniel, 7 years old</text>
+  <text x="52" y="215" fill="#6b7280" font-size="9.5">Microchip</text>
+  <text x="130" y="215" fill="#111827" font-size="9.5" font-weight="bold" letter-spacing="0.8">900123456789012</text>
+  <text x="52" y="231" fill="#6b7280" font-size="9.5">Owner</text>
+  <text x="130" y="231" fill="#111827" font-size="9.5">Emmanuel Al-Hassan</text>
+
+  <!-- Items table header -->
+  <rect x="40" y="258" width="515" height="26" fill="#0891b2"/>
+  <text x="52" y="275" fill="white" font-size="9" font-weight="bold" letter-spacing="0.5">DESCRIPTION</text>
+  <text x="365" y="275" fill="white" font-size="9" font-weight="bold">QTY</text>
+  <text x="410" y="275" fill="white" font-size="9" font-weight="bold">UNIT PRICE</text>
+  <text x="502" y="275" fill="white" font-size="9" font-weight="bold">AMOUNT</text>
+
+  <!-- Row 1 -->
+  <rect x="40" y="284" width="515" height="30" fill="white"/>
+  <text x="52" y="303" fill="#111827" font-size="9.5">Consultation / Examination</text>
+  <text x="365" y="303" fill="#374151" font-size="9.5">1</text>
+  <text x="410" y="303" fill="#374151" font-size="9.5">AED 250.00</text>
+  <text x="502" y="303" fill="#111827" font-size="9.5" font-weight="bold">AED 250.00</text>
+
+  <!-- Row 2 -->
+  <rect x="40" y="314" width="515" height="30" fill="#f9fafb"/>
+  <text x="52" y="333" fill="#111827" font-size="9.5">X-Ray (Thoracic)</text>
+  <text x="365" y="333" fill="#374151" font-size="9.5">1</text>
+  <text x="410" y="333" fill="#374151" font-size="9.5">AED 400.00</text>
+  <text x="502" y="333" fill="#111827" font-size="9.5" font-weight="bold">AED 400.00</text>
+
+  <!-- Row 3 -->
+  <rect x="40" y="344" width="515" height="30" fill="white"/>
+  <text x="52" y="363" fill="#111827" font-size="9.5">Antibiotic Injection</text>
+  <text x="365" y="363" fill="#374151" font-size="9.5">2</text>
+  <text x="410" y="363" fill="#374151" font-size="9.5">AED 120.00</text>
+  <text x="502" y="363" fill="#111827" font-size="9.5" font-weight="bold">AED 240.00</text>
+
+  <!-- Row 4 -->
+  <rect x="40" y="374" width="515" height="30" fill="#f9fafb"/>
+  <text x="52" y="393" fill="#111827" font-size="9.5">Prescribed Medication (Amoxicillin 250mg)</text>
+  <text x="365" y="393" fill="#374151" font-size="9.5">1</text>
+  <text x="410" y="393" fill="#374151" font-size="9.5">AED 180.00</text>
+  <text x="502" y="393" fill="#111827" font-size="9.5" font-weight="bold">AED 180.00</text>
+
+  <!-- Separator: non-covered items notice -->
+  <line x1="40" y1="406" x2="555" y2="406" stroke="#e5e7eb" stroke-width="0.8" stroke-dasharray="5,3"/>
+  <text x="52" y="416" fill="#9ca3af" font-size="7.5" font-style="italic">* Items below may not be covered under your pet insurance policy</text>
+
+  <!-- Row 5 (vitamin — excluded) -->
+  <rect x="40" y="420" width="515" height="30" fill="#fffbeb"/>
+  <text x="52" y="439" fill="#78716c" font-size="9.5">Vitamin B Complex Supplement</text>
+  <text x="365" y="439" fill="#78716c" font-size="9.5">1</text>
+  <text x="410" y="439" fill="#78716c" font-size="9.5">AED 85.00</text>
+  <text x="502" y="439" fill="#78716c" font-size="9.5">AED 85.00</text>
+
+  <!-- Row 6 (food — excluded) -->
+  <rect x="40" y="450" width="515" height="30" fill="#fffbeb"/>
+  <text x="52" y="469" fill="#78716c" font-size="9.5">Premium Diet Pet Food (Hills Science Diet)</text>
+  <text x="365" y="469" fill="#78716c" font-size="9.5">1</text>
+  <text x="410" y="469" fill="#78716c" font-size="9.5">AED 120.00</text>
+  <text x="502" y="469" fill="#78716c" font-size="9.5">AED 120.00</text>
+
+  <!-- Totals -->
+  <line x1="40" y1="482" x2="555" y2="482" stroke="#d1d5db" stroke-width="1"/>
+  <text x="415" y="498" fill="#374151" font-size="9.5">Subtotal</text>
+  <text x="502" y="498" fill="#111827" font-size="9.5">AED 1,275.00</text>
+  <text x="415" y="514" fill="#374151" font-size="9.5">VAT (5%)</text>
+  <text x="502" y="514" fill="#111827" font-size="9.5">AED 63.75</text>
+  <rect x="395" y="522" width="160" height="28" rx="6" fill="#0891b2"/>
+  <text x="410" y="540" fill="white" font-size="10" font-weight="bold">TOTAL: AED 1,338.75</text>
+
+  <!-- Payment badge -->
+  <rect x="40" y="500" width="220" height="46" rx="7" fill="#f0fdf4" stroke="#86efac" stroke-width="1"/>
+  <text x="52" y="518" fill="#15803d" font-size="9.5" font-weight="bold">✓  Payment Received</text>
+  <text x="52" y="534" fill="#374151" font-size="9">Method: Credit Card  |  15/12/2025</text>
+
+  <!-- Veterinarian signature -->
+  <line x1="385" y1="590" x2="555" y2="590" stroke="#9ca3af" stroke-width="0.8"/>
+  <text x="390" y="603" fill="#374151" font-size="10">Dr. Sarah Mitchell, DVM</text>
+  <text x="390" y="617" fill="#9ca3af" font-size="8.5">Attending Veterinarian</text>
+
+  <!-- Notes -->
+  <text x="40" y="580" fill="#9ca3af" font-size="8" font-style="italic">This invoice is issued by Dubai Veterinary Clinic for professional veterinary services.</text>
+  <text x="40" y="593" fill="#9ca3af" font-size="8" font-style="italic">For insurance claims, please submit along with your policy number.</text>
+
+  <!-- Footer -->
+  <rect x="0" y="818" width="595" height="24" fill="#0891b2"/>
+  <text x="40" y="834" fill="rgba(255,255,255,0.75)" font-size="8.5">Dubai Veterinary Clinic  |  Al Barsha, Dubai, UAE  |  +971 4 123 4567  |  www.dubaivet.ae</text>
+  <text x="530" y="834" fill="rgba(255,255,255,0.6)" font-size="8">1 / 1</text>
+</svg>

@@ -298,57 +298,138 @@ function Step5Amount({ value, onChange, onBack, onNext, prefilled }) {
   );
 }
 
-function Step6Documents({ files, onChange, onBack, onNext, loading }) {
+function Step6Documents({ files, onChange, onBack, onNext, loading, useSample, onToggleSample }) {
   function handleDrop(e) {
     e.preventDefault();
+    onToggleSample(false);
     onChange([...files, ...Array.from(e.dataTransfer.files)]);
   }
   function handleInput(e) {
+    onToggleSample(false);
     onChange([...files, ...Array.from(e.target.files)]);
   }
   function removeFile(idx) {
     onChange(files.filter((_, i) => i !== idx));
   }
+  function selectSample() {
+    onChange([]);
+    onToggleSample(true);
+  }
+  function clearSample() {
+    onToggleSample(false);
+  }
+
+  const hasContent = useSample || files.length > 0;
+
   return (
-    <div className="flex flex-col flex-1 gap-5">
-      <MascotBubble message="Upload your invoice and we'll do the rest! 🔍" />
+    <div className="flex flex-col flex-1 gap-4">
+      <MascotBubble message="Upload your invoice and we'll extract everything! 🔍" />
       <h2 className="font-display text-3xl text-primary-500 text-center">
         Upload your documents 📎
       </h2>
       <p className="text-xs text-text-secondary text-center -mt-2">
-        We'll automatically extract data from your vet invoice
+        We'll automatically extract microchip, date, clinic and line items from your vet invoice
       </p>
-      <div
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={handleDrop}
-        className="border-2 border-dashed border-primary-200 rounded-2xl p-8 flex flex-col items-center gap-3 bg-primary-25 cursor-pointer hover:bg-primary-50 transition"
-        onClick={() => document.getElementById("doc-upload").click()}
-      >
-        <span className="text-4xl">📂</span>
-        <p className="text-sm text-text-secondary text-center">
-          Drag & drop vet bills or medical documents here<br />
-          <span className="text-primary-500 font-medium">or click to browse</span>
-        </p>
-        <p className="text-xs text-text-secondary">PDF, JPG, PNG — max 10 MB each</p>
-        <input id="doc-upload" type="file" multiple accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={handleInput} />
-      </div>
-      {files.length > 0 && (
-        <div className="flex flex-col gap-2">
-          {files.map((f, i) => (
-            <div key={i} className="flex items-center gap-3 bg-paper-tertiary rounded-xl px-4 py-2">
-              <span>📄</span>
-              <span className="flex-1 text-sm text-text-primary truncate">{f.name}</span>
-              <span className="text-xs text-text-secondary">{(f.size / 1024).toFixed(0)} KB</span>
-              <button onClick={() => removeFile(i)} className="text-text-secondary hover:text-ruby-400 text-sm ml-2">✕</button>
+
+      {/* Sample invoice card */}
+      {!useSample && files.length === 0 && (
+        <button
+          onClick={selectSample}
+          className="flex items-center gap-4 p-4 rounded-2xl border-2 border-dashed border-primary-200 bg-primary-25 hover:bg-primary-50 hover:border-primary-400 transition text-left w-full"
+        >
+          <div className="shrink-0 w-16 h-20 rounded-lg overflow-hidden border border-primary-100 shadow-sm bg-white">
+            <img src="/sample-invoice.svg" alt="Sample invoice" className="w-full h-full object-cover object-top" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-primary-600">Try with sample invoice</p>
+            <p className="text-xs text-text-secondary mt-0.5">Dubai Veterinary Clinic · Oslo · Dec 2025</p>
+            <p className="text-xs text-text-secondary">Includes covered + excluded items to demo all checks</p>
+          </div>
+          <span className="text-primary-400 text-lg shrink-0">→</span>
+        </button>
+      )}
+
+      {/* Sample invoice selected state */}
+      {useSample && (
+        <div className="flex gap-4 p-4 rounded-2xl border-2 border-primary-300 bg-primary-25">
+          {/* Invoice preview */}
+          <a href="/sample-invoice.svg" target="_blank" rel="noreferrer" className="shrink-0 w-20 h-28 rounded-lg overflow-hidden border border-primary-200 shadow block hover:shadow-md transition">
+            <img src="/sample-invoice.svg" alt="Sample invoice" className="w-full h-full object-cover object-top" />
+          </a>
+          <div className="flex-1 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="w-5 h-5 bg-primary-500 rounded-full flex items-center justify-center text-white text-xs font-bold">✓</span>
+                <p className="text-sm font-semibold text-primary-600">Sample invoice selected</p>
+              </div>
+              <p className="text-xs text-text-secondary">Dubai Veterinary Clinic · Al Barsha, Dubai</p>
+              <p className="text-xs text-text-secondary">Invoice #INV-2025-08842 · 15 Dec 2025</p>
+              <p className="text-xs text-text-secondary mt-1">6 line items: 4 covered + 2 excluded (vitamin, food)</p>
             </div>
-          ))}
+            <div className="flex gap-2 mt-2">
+              <a
+                href="/sample-invoice.svg"
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-primary-500 underline hover:text-primary-700"
+              >
+                View invoice ↗
+              </a>
+              <span className="text-text-secondary text-xs">·</span>
+              <button onClick={clearSample} className="text-xs text-ruby-400 hover:text-ruby-600">
+                Remove
+              </button>
+            </div>
+          </div>
         </div>
       )}
+
+      {/* Real file upload zone — only show if sample not selected */}
+      {!useSample && (
+        <>
+          {files.length === 0 && (
+            <div className="flex items-center gap-3 text-xs text-text-secondary">
+              <div className="flex-1 h-px bg-gray-200" />
+              <span>or upload your own</span>
+              <div className="flex-1 h-px bg-gray-200" />
+            </div>
+          )}
+          <div
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleDrop}
+            className="border-2 border-dashed border-gray-200 rounded-2xl p-6 flex flex-col items-center gap-2 bg-paper-tertiary cursor-pointer hover:bg-primary-25 hover:border-primary-200 transition"
+            onClick={() => document.getElementById("doc-upload").click()}
+          >
+            <span className="text-3xl">📂</span>
+            <p className="text-sm text-text-secondary text-center">
+              Drag & drop vet bills here
+              <br />
+              <span className="text-primary-500 font-medium">or click to browse</span>
+            </p>
+            <p className="text-xs text-text-secondary">PDF, JPG, PNG — max 10 MB each</p>
+            <input id="doc-upload" type="file" multiple accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={handleInput} />
+          </div>
+
+          {files.length > 0 && (
+            <div className="flex flex-col gap-2">
+              {files.map((f, i) => (
+                <div key={i} className="flex items-center gap-3 bg-white rounded-xl px-4 py-2 border border-gray-100">
+                  <span>📄</span>
+                  <span className="flex-1 text-sm text-text-primary truncate">{f.name}</span>
+                  <span className="text-xs text-text-secondary">{(f.size / 1024).toFixed(0)} KB</span>
+                  <button onClick={() => removeFile(i)} className="text-text-secondary hover:text-ruby-400 text-sm ml-2">✕</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
       <NavButtons
         step={6}
         onBack={onBack}
         onNext={onNext}
-        nextLabel={files.length > 0 ? "Analyze Invoice →" : "Skip (no documents) →"}
+        nextLabel={hasContent ? "Analyze Invoice →" : "Skip (no documents) →"}
         loading={loading}
       />
     </div>
@@ -653,9 +734,10 @@ export default function SendClaim() {
   });
 
   // Invoice extraction
-  const [extraction, setExtraction]       = useState(null);
+  const [extraction, setExtraction]         = useState(null);
   const [extractLoading, setExtractLoading] = useState(false);
-  const [extractError, setExtractError]   = useState("");
+  const [extractError, setExtractError]     = useState("");
+  const [useSampleInvoice, setUseSampleInvoice] = useState(false);
 
   // Flags for auto-filled fields
   const [prefilledDate,   setPrefilledDate]   = useState(false);
@@ -673,11 +755,12 @@ export default function SendClaim() {
   function next() { setStep((s) => Math.min(s + 1, STEPS.length)); }
   function back() { setStep((s) => Math.max(s - 1, 1)); }
 
-  // Step 6 → 7: run extraction if a file was provided
+  // Step 6 → 7: run extraction (real upload or sample demo)
   async function nextFromDocuments() {
     setExtractError("");
 
-    if (formData.files.length === 0) {
+    const hasSomething = useSampleInvoice || formData.files.length > 0;
+    if (!hasSomething) {
       setExtraction(null);
       next();
       return;
@@ -685,20 +768,30 @@ export default function SendClaim() {
 
     setExtractLoading(true);
     try {
-      const fd = new FormData();
-      fd.append("file", formData.files[0]);
-      fd.append("pet_id", formData.pet || "oslo");
+      let data;
 
-      const res = await fetch("/api/extract-invoice", { method: "POST", body: fd });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || "Invoice extraction failed");
+      if (useSampleInvoice) {
+        // Hit the demo endpoint — runs real validator against hardcoded invoice
+        const petId = formData.pet || "oslo";
+        const res = await fetch(`/api/demo-extract?pet_id=${petId}`);
+        if (!res.ok) throw new Error("Demo extraction failed");
+        data = await res.json();
+      } else {
+        // Real file upload → Claude vision extraction
+        const fd = new FormData();
+        fd.append("file", formData.files[0]);
+        fd.append("pet_id", formData.pet || "oslo");
+        const res = await fetch("/api/extract-invoice", { method: "POST", body: fd });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || "Invoice extraction failed");
+        }
+        data = await res.json();
       }
 
-      const data = await res.json();
       setExtraction(data);
 
-      // Auto-fill date and amount from invoice if empty
+      // Auto-fill date and amount from invoice if the user hasn't typed them yet
       if (data.pre_filled?.visitDate && !formData.visitDate) {
         setFormData((prev) => ({ ...prev, visitDate: data.pre_filled.visitDate }));
         setPrefilledDate(true);
@@ -751,6 +844,8 @@ export default function SendClaim() {
           onBack={back}
           onNext={nextFromDocuments}
           loading={extractLoading}
+          useSample={useSampleInvoice}
+          onToggleSample={setUseSampleInvoice}
         />
       );
       case 7: return <Step7InvoiceReview extraction={extraction} onBack={back} onNext={next} />;
