@@ -1,13 +1,13 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import SendClaim from "./pages/SendClaim";
 
 export default function App() {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
       <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="/claim" element={<SendClaim />} />
+      <Route path="*" element={<Navigate to="/claim" replace />} />
     </Routes>
   );
 }

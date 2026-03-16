@@ -1,9 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { RadialKPI, StatKPI } from "../components/KPICard";
 import PetCard from "../components/PetCard";
 import ActivityTimeline from "../components/ActivityTimeline";
-import SendClaimModal from "../components/SendClaimModal";
 
 const PETS = [
   { name: "OSLO", breed: "American Bobtail", age: 2, plan: "Vital", status: "expiring", statusLabel: "expires Feb 15", emoji: "🐱" },
@@ -20,7 +20,7 @@ const ACTIVITIES = [
 const PET_FILTERS = ["OSLO", "Blah", "Luna"];
 
 export default function Dashboard() {
-  const [showClaim, setShowClaim] = useState(false);
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState("OSLO");
 
   return (
@@ -62,7 +62,7 @@ export default function Dashboard() {
 
               {/* Send a Claim */}
               <button
-                onClick={() => setShowClaim(true)}
+                onClick={() => navigate("/claim")}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-ruby-400 to-ruby-500 text-white text-sm font-semibold shadow-md hover:opacity-90 transition"
               >
                 📄 Send a Claim
@@ -153,7 +153,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {showClaim && <SendClaimModal onClose={() => setShowClaim(false)} />}
     </div>
   );
 }
