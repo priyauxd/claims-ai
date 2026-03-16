@@ -1,4 +1,5 @@
 import json
+from typing import Optional
 
 import anthropic
 
@@ -23,7 +24,7 @@ class ClaimsClassifier:
     def __init__(self) -> None:
         self._client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
 
-    def classify(self, claim_text: str, claim_id: str | None = None) -> ClassificationResult:
+    def classify(self, claim_text: str, claim_id: Optional[str] = None) -> ClassificationResult:
         prompt = CLASSIFICATION_PROMPT.format(
             claim_types=[t.value for t in ClaimType],
             priorities=[p.value for p in ClaimPriority],
